@@ -139,10 +139,8 @@ static Value *_eval(Env *env, Value *ast, Value *expression, int depth, int *lin
 
 				case VALUE_C_FUNCTION: {
 					result = FIRST(ast)->as.cFunction(REST(ast));
-					if (IS_ERROR(result)) {
-						result->pos = REST(ast)->pos;
-						return result;
-					}
+					if (IS_TEXT_POS_NONE(result->pos)) result->pos = ast->pos;
+					RETURN_IF_ERROR(result);
 					break;
 				}
 				case VALUE_NIL:

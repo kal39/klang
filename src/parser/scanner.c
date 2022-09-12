@@ -45,6 +45,7 @@ static Token _scan_next_token(Scanner *scanner) {
 	// skip comments
 	if (*start == ';') {
 		while (*_peek(scanner) != '\n' && *_peek(scanner) != '\0') start = _next(scanner);
+		_next(scanner);
 		start = _next(scanner);
 		scanner->pos.row++;
 		scanner->pos.col = 1;

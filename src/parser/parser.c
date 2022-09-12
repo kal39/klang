@@ -6,7 +6,7 @@ static bool _is_digit(char c) {
 }
 
 static bool _is_number(Token token) {
-	if (!_is_digit(token.start[0])) return false;
+	if (!(_is_digit(token.start[0]) || (token.start[0] == '-' && _is_digit(token.start[1])))) return false;
 	for (int i = 1; i < token.length; i++) {
 		if (!_is_digit(token.start[i]) && token.start[i] != '.') return false;
 		if (token.start[i] == '.' && !_is_digit(token.start[i + 1])) return false;

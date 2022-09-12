@@ -124,7 +124,9 @@ int value_print(Value *value) {
 		case VALUE_STRING: return printf("\"%s\"", value->as.chars);
 		case VALUE_FUNCTION: return printf("FUNCTION");
 		case VALUE_C_FUNCTION: return printf("C_FUNCTION");
-		case VALUE_ERROR: return printf("<ERROR %s>", value->as.chars);
+		case VALUE_ERROR:
+			return printf(
+				"<ERROR: %s at %s:%d:%d>", value->as.chars, value->pos.fileName, value->pos.row, value->pos.col);
 	}
 
 	return 0;
