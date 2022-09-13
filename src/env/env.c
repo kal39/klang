@@ -9,6 +9,7 @@ Env *env_create(Env *outer) {
 
 void env_destroy(Env *env) {
 	table_destroy(env->table);
+	if (env->outer != NULL) env_destroy(env->outer);
 	free(env);
 }
 
@@ -18,11 +19,12 @@ void env_set(Env *env, Value *key, Value *value) {
 }
 
 Value *env_get(Env *env, Value *key) {
-	if (!IS_SYMBOL(key)) return NULL;
+	if (!IS_SYMBOL(key)) return ERROR(key->pos, "expected symbol");
 	Value *value = table_get(env->table, key->as.chars);
+
 	if (value != NULL) return value;
 	else if (env->outer != NULL) return env_get(env->outer, key);
-	else return ERROR(TEXT_POS_NONE, "symbol not found");
+	else return value_create(key->pos, VALUE_NIL);
 }
 
 void env_print(Env *env) {

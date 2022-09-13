@@ -21,7 +21,7 @@ static Value *_eval(Env *env, Value *ast, Value *expression, int depth, int *lin
 	value_print(ast);
 #endif
 
-	Value *result = ast;
+	Value *result = value_copy(ast);
 
 	switch (ast->type) {
 		case VALUE_PAIR: {
@@ -95,7 +95,7 @@ static Value *_eval(Env *env, Value *ast, Value *expression, int depth, int *lin
 
 						case KEYWORD_QUOTE: {
 							EXPECT(list_length(REST(ast)) == 1, "expected 1 arguments", REST(ast)->pos);
-							result = REST(ast);
+							result = FIRST(REST(ast));
 							break;
 						}
 					}

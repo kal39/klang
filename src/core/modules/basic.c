@@ -1,4 +1,4 @@
-#include "core_util.h"
+#include "../core_util.h"
 
 static bool __equals(Value *a, Value *b) {
 	if (a->type != b->type) return false;

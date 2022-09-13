@@ -11,69 +11,52 @@
 // TODO: argv / argc
 // TODO: macros
 
-// static void _repl() {
-// 	Env *core = make_core();
-// 	env_load_file(core, "data/stdlib.mal");
+static void _repl() {
+	Env *core = make_core();
 
-// 	char line[1024];
-// 	for (;;) {
-// 		printf("\n > ");
-// 		fgets(line, sizeof(line), stdin);
+	char line[1024];
+	for (;;) {
+		printf("\n > ");
+		fgets(line, sizeof(line), stdin);
 
-// 		Value *asts = parse_string(line);
+		Value *asts = parse_string(line, "stdin");
 
-// 		ITERATE_LIST(i, asts) {
-// 			Value *result = eval(core, FIRST(i));
-// 			if (IS_ERROR(result)) {
-// 				printf("\n");
-// 				error_print(result);
-// 			} else {
-// 				printf("\n = ");
-// 				value_print(result);
-// 			}
-// 			printf("\n");
-// 		}
-// 	}
+		ITERATE_LIST(i, asts) {
+			Value *result = eval(core, FIRST(i));
+			if (IS_ERROR(result)) {
+				printf("\n");
+				value_print(result);
+			} else {
+				printf("\n = ");
+				value_print(result);
+			}
+			printf("\n");
+		}
+	}
 
-// 	env_destroy(core);
-// }
+	env_destroy(core);
+}
 
-// static void _run_file(char *fileName) {
-// 	char *string = read_file(fileName);
-// 	Value *asts = parse_string(string);
-// 	Env *core = make_core();
-// 	env_load_file(core, "data/stdlib.h");
-
-// 	ITERATE_LIST(i, asts) {
-// 		Value *result = eval(core, FIRST(i));
-// 		if (IS_ERROR(result)) {
-// 			printf("\n");
-// 			error_print(result);
-// 		}
-// 	}
-
-// 	value_destroy(asts);
-// 	env_destroy(core);
-// 	free(string);
-// }
-
-int main(void) {
+static void _run_file(char *fileName) {
+	Env *core = make_core();
 	Value *asts = parse_file("tests/scratchpad.klang");
 
-	value_print(asts);
-	printf("\n");
-
-	Env *env = make_core();
-
 	ITERATE_LIST(i, asts) {
-		printf("> ");
-		value_print(FIRST(i));
-		printf("\n  ");
-		value_print(eval(env, FIRST(i)));
-		printf("\n");
+		Value *result = eval(core, FIRST(i));
+		if (IS_ERROR(result)) {
+			value_print(result);
+			printf("\n");
+		}
+		value_destroy(result);
 	}
 
 	value_destroy(asts);
+	env_destroy(core);
+}
 
+int main(int argc, char **argv) {
+	if (argc == 1) _repl();
+	else if (argc == 2) _run_file(argv[1]);
+	else printf("ERROR: Usage: mal [filename]\n");
 	return 0;
 }

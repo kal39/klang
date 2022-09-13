@@ -1,4 +1,4 @@
-#include "core_util.h"
+#include "../core_util.h"
 
 static Value *_cons(Value *args) {
 	EXPECT(list_length(args) == 2, "expected 2 argument", args->pos);

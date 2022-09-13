@@ -71,24 +71,72 @@ Value *value_create_c_function(TextPos pos, Value *(*cFunction)(Value *args)) {
 	return value;
 }
 
-void value_destroy(Value *value) {
-	if (value == NULL) return;
+Value *value_copy(Value *value) {
+	Value *newValue = malloc(sizeof(Value));
+	memcpy(newValue, value, sizeof(Value));
+
 	switch (value->type) {
 		case VALUE_PAIR:
-			value_destroy(value->as.pair.first);
-			value_destroy(value->as.pair.rest);
+			FIRST(newValue) = value_copy(FIRST(value));
+			REST(newValue) = value_copy(REST(value));
 			break;
 		case VALUE_SYMBOL:
 		case VALUE_STRING:
-		case VALUE_ERROR: free(value->as.chars); break;
+		case VALUE_ERROR:
+			if (value->as.chars != NULL) {
+				int len = strlen(value->as.chars) + 1;
+				newValue->as.chars = malloc(len);
+				memcpy(newValue->as.chars, value->as.chars, len);
+			} else {
+				newValue->as.chars = NULL;
+			}
+			break;
+		case VALUE_FUNCTION:
+			newValue->as.function.args = value_copy(value->as.function.args);
+			newValue->as.function.body = value_copy(value->as.function.body);
+			break;
+		case VALUE_KEYWORD:
+		case VALUE_NIL:
+		case VALUE_TRUE:
+		case VALUE_FALSE:
+		case VALUE_NUMBER:
+		case VALUE_C_FUNCTION: break;
+	}
+
+	return newValue;
+}
+
+void value_destroy(Value *value) {
+	if (value == NULL) return;
+
+	switch (value->type) {
+		case VALUE_PAIR:
+			value_destroy(FIRST(value));
+			value_destroy(REST(value));
+			break;
+		case VALUE_SYMBOL:
+		case VALUE_STRING:
+		case VALUE_ERROR:
+			if (value->as.chars != NULL) {
+				free(value->as.chars);
+				value->as.chars = NULL;
+			}
+			break;
 		case VALUE_FUNCTION:
 			env_destroy(value->as.function.outer);
 			value_destroy(value->as.function.args);
 			value_destroy(value->as.function.body);
 			break;
-		default: break;
+		case VALUE_KEYWORD:
+		case VALUE_NIL:
+		case VALUE_TRUE:
+		case VALUE_FALSE:
+		case VALUE_NUMBER:
+		case VALUE_C_FUNCTION: break;
 	}
+
 	free(value);
+	value = NULL;
 }
 
 // TODO: handle pairs

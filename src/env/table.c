@@ -42,6 +42,20 @@ static void _resize(Table *table, int newCapacity) {
 	if (oldEntries != NULL) free(oldEntries);
 }
 
+static Entry _entry_create(char *key, Value *value) {
+	Entry entry;
+	int keyLen = strlen(key) + 1;
+	entry.key = malloc(keyLen);
+	memcpy(entry.key, key, keyLen);
+	entry.value = value_copy(value);
+	return entry;
+}
+
+static void _entry_destroy(Entry entry) {
+	free(entry.key);
+	value_destroy(entry.value);
+}
+
 Table *table_create() {
 	Table *table = malloc(sizeof(Table));
 	table->capacity = 0;
@@ -53,6 +67,11 @@ Table *table_create() {
 }
 
 void table_destroy(Table *table) {
+	for (int i = 0; i < table->capacity; i++) {
+		Entry *entry = &table->entries[i];
+		if (entry->key != NULL) _entry_destroy(*entry);
+	}
+
 	free(table->entries);
 	free(table);
 }
@@ -63,8 +82,7 @@ void table_set(Table *table, char *key, Value *value) {
 	Entry *entry = _find(table, key);
 	if (entry->key == NULL) table->size++;
 
-	entry->key = key;
-	entry->value = value;
+	*entry = _entry_create(key, value);
 }
 
 Value *table_get(Table *table, char *key) {

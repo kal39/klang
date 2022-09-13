@@ -6,7 +6,9 @@
 			"type": "cppdbg",
 			"request": "launch",
 			"program": "${workspaceFolder}/klang",
-			"args": [],
+			"args": [
+				"tests/scratchpad.klang"
+			],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}",
 			"environment": [],

@@ -1,4 +1,4 @@
-#include "core_util.h"
+#include "../core_util.h"
 #include "parser/parser.h"
 
 static Value *_string(Value *args) {

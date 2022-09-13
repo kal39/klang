@@ -73,6 +73,7 @@ Value *value_create_chars(TextPos pos, ValueType type, char *string, int stringL
 Value *value_create_function(TextPos pos, Env *outer, Value *args, Value *body);
 Value *value_create_c_function(TextPos pos, Value *(*cFunction)(Value *args));
 
+Value *value_copy(Value *value);
 void value_destroy(Value *value);
 
 int value_print(Value *value);
