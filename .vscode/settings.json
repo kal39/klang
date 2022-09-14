@@ -2,7 +2,16 @@
 	"files.associations": {
 		"*.h": "c",
 		"*.cl": "opencl",
-		"type_traits": "c"
+		"type_traits": "c",
+		"optional": "c",
+		"ratio": "c",
+		"system_error": "c",
+		"array": "c",
+		"functional": "c",
+		"tuple": "c",
+		"utility": "c",
+		"istream": "c",
+		"ostream": "c"
 	},
 	"cSpell.words": [
 		"klang"

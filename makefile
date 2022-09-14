@@ -5,7 +5,7 @@
 #---- BASIC -----------------------------------------------------------------------------------------------------------#
 
 EXECUTABLE     := klang
-LIBS           := 
+LIBS           := -lreadline
 FLAGS          := -Wall -Wno-missing-braces -g
 DEFS           := #-DPRINT_EVALUATION_STEPS
 

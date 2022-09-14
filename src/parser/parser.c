@@ -41,7 +41,7 @@ static Value *_read_list(Scanner *scanner) {
 	Value *list = list_create(scanner_next(scanner).pos);
 
 	for (;;) {
-		if (IS_END_TOKEN(scanner_peek(scanner))) return ERROR(scanner_peek(scanner).pos, "unterminated list");
+		if (IS_END_TOKEN(scanner_peek(scanner))) return ERROR(list->pos, "unterminated list");
 		if (scanner_peek(scanner).start[0] == ')') break;
 		list_add(list, _parse(scanner));
 	}
@@ -51,7 +51,18 @@ static Value *_read_list(Scanner *scanner) {
 }
 
 static Value *_parse(Scanner *scanner) {
-	return scanner_peek(scanner).start[0] == '(' ? _read_list(scanner) : _read_atom(scanner);
+	Token token = scanner_peek(scanner);
+	switch (token.start[0]) {
+		case '(': return _read_list(scanner);
+		case '\'': {
+			scanner_next(scanner);
+			Value *list = list_create(token.pos);
+			list_add(list, value_create_keyword(token.pos, KEYWORD_QUOTE));
+			list_add(list, _parse(scanner));
+			return list;
+		}
+		default: return _read_atom(scanner);
+	}
 }
 
 Value *parse_string(char *string, char *fileName) {

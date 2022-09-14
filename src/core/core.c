@@ -3,12 +3,12 @@
 
 void add_core_basic(Env *core);
 void add_core_list(Env *core);
-void add_core_string(Env *core);
+void add_core_io(Env *core);
 
 Env *make_core() {
 	Env *core = env_create(NULL);
 	add_core_basic(core);
 	add_core_list(core);
-	add_core_string(core);
+	add_core_io(core);
 	return core;
 }

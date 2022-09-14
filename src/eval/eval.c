@@ -5,14 +5,14 @@
 
 #define RETURN_IF_ERROR(value)                                                                                         \
 	if (IS_ERROR(value)) return value
-#define EVAL(env, ast, expression) _eval(env, ast, expression, depth + 1, line)
+#define EVAL(env, ast) _eval(env, ast, depth + 1, line)
 #define EXPECT(condition, message, pos)                                                                                \
 	if (!(condition)) {                                                                                                \
 		result = ERROR(pos, message);                                                                                  \
 		break;                                                                                                         \
 	}
 
-static Value *_eval(Env *env, Value *ast, Value *expression, int depth, int *line) {
+static Value *_eval(Env *env, Value *ast, int depth, int *line) {
 #ifdef PRINT_EVALUATION_STEPS
 	*line = *line + 1;
 	int startLine = *line;
@@ -33,7 +33,7 @@ static Value *_eval(Env *env, Value *ast, Value *expression, int depth, int *lin
 
 							for (Value *i = REST(ast); !IS_NIL(i); i = REST(REST(i))) {
 								Value *key = FIRST(i);
-								result = EVAL(env, SECOND(i), expression);
+								result = EVAL(env, SECOND(i));
 								RETURN_IF_ERROR(result);
 								env_set(env, key, result);
 							}
@@ -47,12 +47,12 @@ static Value *_eval(Env *env, Value *ast, Value *expression, int depth, int *lin
 							Env *newEnv = env_create(env);
 							for (Value *i = SECOND(ast); !IS_NIL(i); i = REST(REST(i))) {
 								Value *key = FIRST(i);
-								Value *value = EVAL(env, SECOND(i), expression);
+								Value *value = EVAL(env, SECOND(i));
 								RETURN_IF_ERROR(value);
 								env_set(newEnv, key, value);
 							}
 
-							result = EVAL(newEnv, THIRD(ast), expression);
+							result = EVAL(newEnv, THIRD(ast));
 							RETURN_IF_ERROR(result);
 							env_destroy(newEnv);
 							break;
@@ -61,7 +61,7 @@ static Value *_eval(Env *env, Value *ast, Value *expression, int depth, int *lin
 						case KEYWORD_DO: {
 							Value *results = list_create(ast->pos);
 							ITERATE_LIST(i, REST(ast)) {
-								Value *value = EVAL(env, FIRST(i), expression);
+								Value *value = EVAL(env, FIRST(i));
 								RETURN_IF_ERROR(value);
 								list_add(results, value);
 							}
@@ -71,9 +71,9 @@ static Value *_eval(Env *env, Value *ast, Value *expression, int depth, int *lin
 
 						case KEYWORD_IF: {
 							EXPECT(list_length(REST(ast)) == 3, "expected 3 arguments", REST(ast)->pos);
-							Value *condition = EVAL(env, SECOND(ast), expression);
+							Value *condition = EVAL(env, SECOND(ast));
 							RETURN_IF_ERROR(condition);
-							result = EVAL(env, IS_FALSE(condition) ? FOURTH(ast) : THIRD(ast), expression);
+							result = EVAL(env, IS_FALSE(condition) ? FOURTH(ast) : THIRD(ast));
 							RETURN_IF_ERROR(result);
 							break;
 						}
@@ -86,9 +86,9 @@ static Value *_eval(Env *env, Value *ast, Value *expression, int depth, int *lin
 
 						case KEYWORD_EVAL: {
 							EXPECT(list_length(REST(ast)) == 1, "expected 1 arguments", REST(ast)->pos);
-							Value *value = EVAL(env, FIRST(REST(ast)), expression);
+							Value *value = EVAL(env, FIRST(REST(ast)));
 							RETURN_IF_ERROR(value);
-							result = EVAL(env, value, value);
+							result = EVAL(env, value);
 							RETURN_IF_ERROR(result);
 							break;
 						}
@@ -106,12 +106,12 @@ static Value *_eval(Env *env, Value *ast, Value *expression, int depth, int *lin
 				case VALUE_SYMBOL: {
 					Value *evaluatedAst = list_create(ast->pos);
 					ITERATE_LIST(i, ast) {
-						Value *value = EVAL(env, FIRST(i), expression);
+						Value *value = EVAL(env, FIRST(i));
 						RETURN_IF_ERROR(value);
 						list_add(evaluatedAst, value);
 					}
 
-					result = EVAL(env, evaluatedAst, expression);
+					result = EVAL(env, evaluatedAst);
 					RETURN_IF_ERROR(result);
 					break;
 				}
@@ -132,7 +132,7 @@ static Value *_eval(Env *env, Value *ast, Value *expression, int depth, int *lin
 						argValues = REST(argValues);
 					}
 
-					result = EVAL(funEnv, function->as.function.body, function->as.function.body);
+					result = EVAL(funEnv, function->as.function.body);
 					RETURN_IF_ERROR(result);
 					break;
 				}
@@ -148,7 +148,7 @@ static Value *_eval(Env *env, Value *ast, Value *expression, int depth, int *lin
 				case VALUE_FALSE:
 				case VALUE_NUMBER:
 				case VALUE_STRING:
-				case VALUE_ERROR: ERROR(FIRST(ast)->pos, "expected function"); break;
+				case VALUE_ERROR: result = ERROR(FIRST(ast)->pos, "expected function"); break;
 			}
 			break;
 		}
@@ -189,9 +189,10 @@ static Value *_eval(Env *env, Value *ast, Value *expression, int depth, int *lin
 
 Value *eval(Env *env, Value *ast) {
 	int line = 0;
-	Value *result = _eval(env, ast, ast, 0, &line);
+	Value *result = _eval(env, ast, 0, &line);
 #ifdef PRINT_EVALUATION_STEPS
-	printf("\n");
+	printf("\n\n");
+	env_print(env);
 #endif
 	return result;
 }

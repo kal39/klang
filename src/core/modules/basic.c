@@ -1,4 +1,5 @@
 #include "../core_util.h"
+#include "parser/parser.h"
 
 static bool __equals(Value *a, Value *b) {
 	if (a->type != b->type) return false;
@@ -125,6 +126,46 @@ static Value *_not(Value *args) {
 	return ERROR(FIRST(args)->pos, "expected boolean");
 }
 
+static Value *_string(Value *args) {
+	EXPECT(list_length(args) >= 1, "expected 1+ arguments", args->pos);
+
+	int totalLen = 0;
+	ITERATE_LIST(i, args) {
+		switch (FIRST(i)->type) {
+			case VALUE_NIL: totalLen += snprintf(NULL, 0, "nil"); break;
+			case VALUE_TRUE: totalLen += snprintf(NULL, 0, "true"); break;
+			case VALUE_FALSE: totalLen += snprintf(NULL, 0, "false"); break;
+			case VALUE_NUMBER: totalLen += snprintf(NULL, 0, "%g", FIRST(i)->as.number); break;
+			case VALUE_STRING: totalLen += snprintf(NULL, 0, "%s", FIRST(i)->as.chars); break;
+			default: return ERROR(FIRST(i)->pos, "expected printable");
+		}
+	}
+
+	char *string = malloc(totalLen + 1);
+	string[0] = '\0';
+
+	ITERATE_LIST(i, args) {
+		switch (FIRST(i)->type) {
+			case VALUE_NIL: sprintf(string, "nil"); break;
+			case VALUE_TRUE: sprintf(string + strlen(string), "true"); break;
+			case VALUE_FALSE: sprintf(string + strlen(string), "false"); break;
+			case VALUE_NUMBER: sprintf(string + strlen(string), "%g", FIRST(i)->as.number); break;
+			case VALUE_STRING: sprintf(string + strlen(string), "%s", FIRST(i)->as.chars); break;
+			default: return ERROR(FIRST(i)->pos, "expected printable");
+		}
+	}
+
+	Value *value = value_create(TEXT_POS_NONE, VALUE_STRING);
+	value->as.chars = string;
+	return value;
+}
+
+static Value *_parse_string(Value *args) {
+	EXPECT(list_length(args) == 1, "expected 1 arguments", args->pos);
+	EXPECT(IS_STRING(FIRST(args)), "expected string", FIRST(args)->pos);
+	return FIRST(parse_string(FIRST(args)->as.chars, "NIL"));
+}
+
 void add_core_basic(Env *core) {
 	ADD_FUNCTION(core, "+", _add);
 	ADD_FUNCTION(core, "-", _subtract);
@@ -136,4 +177,6 @@ void add_core_basic(Env *core) {
 	ADD_FUNCTION(core, ">", _greater_than);
 	ADD_FUNCTION(core, ">=", _greater_than_equals);
 	ADD_FUNCTION(core, "!", _not);
+	ADD_FUNCTION(core, "string", _string);
+	ADD_FUNCTION(core, "parse-string", _parse_string);
 }

@@ -91,10 +91,30 @@ Value *table_get(Table *table, char *key) {
 }
 
 void table_print(Table *table) {
+	int maxLen = 3;
 	for (int i = 0; i < table->capacity; i++) {
 		Entry *entry = &table->entries[i];
 		if (entry->key != NULL) {
-			printf("\"%s\": ", entry->key);
+			int len = strlen(entry->key);
+			if (len > maxLen) maxLen = len;
+		}
+	}
+
+	printf("┃ key");
+	for (int j = 0; j < maxLen - 3; j++) printf(" ");
+	printf(" ┃ value\n┣━");
+	for (int j = 0; j < maxLen; j++) printf("━");
+	printf("━╋━");
+	for (int j = 0; j < maxLen; j++) printf("━");
+	printf("\n");
+
+	for (int i = 0; i < table->capacity; i++) {
+		Entry *entry = &table->entries[i];
+		if (entry->key != NULL) {
+			int len = strlen(entry->key);
+			printf("┃ %s", entry->key);
+			for (int j = 0; j < maxLen - len; j++) printf(" ");
+			printf(" ┃ ");
 			value_print(entry->value);
 			printf("\n");
 		}

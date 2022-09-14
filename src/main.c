@@ -1,3 +1,6 @@
+#include <readline/history.h>
+#include <readline/readline.h>
+
 #include "core/core.h"
 #include "env/env.h"
 #include "eval/eval.h"
@@ -13,13 +16,14 @@
 
 static void _repl() {
 	Env *core = make_core();
+	rl_bind_key('\t', rl_insert);
 
-	char line[1024];
 	for (;;) {
-		printf("\n > ");
-		fgets(line, sizeof(line), stdin);
+		char *line = readline(" > ");
+		add_history(line);
 
-		Value *asts = parse_string(line, "stdin");
+		char *fileName = "stdin";
+		Value *asts = parse_string(line, fileName);
 
 		ITERATE_LIST(i, asts) {
 			Value *result = eval(core, FIRST(i));
@@ -30,8 +34,10 @@ static void _repl() {
 				printf("\n = ");
 				value_print(result);
 			}
-			printf("\n");
+			printf("\n\n");
 		}
+
+		free(line);
 	}
 
 	env_destroy(core);
@@ -39,7 +45,7 @@ static void _repl() {
 
 static void _run_file(char *fileName) {
 	Env *core = make_core();
-	Value *asts = parse_file("tests/scratchpad.klang");
+	Value *asts = parse_file(fileName);
 
 	ITERATE_LIST(i, asts) {
 		Value *result = eval(core, FIRST(i));
