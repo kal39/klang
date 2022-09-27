@@ -11,7 +11,9 @@
 		"tuple": "c",
 		"utility": "c",
 		"istream": "c",
-		"ostream": "c"
+		"ostream": "c",
+		"cstdlib": "c",
+		"compare": "c"
 	},
 	"cSpell.words": [
 		"klang"

@@ -26,6 +26,15 @@ static Value *_eval(Env *env, Value *ast, int depth, int *line) {
 	switch (ast->type) {
 		case VALUE_PAIR: {
 			switch (FIRST(ast)->type) {
+				case VALUE_PAIR:
+				case VALUE_SYMBOL: {
+					Value *tmpAst = value_create_pair(FIRST(ast)->pos, EVAL(env, FIRST(ast)), REST(ast));
+					RETURN_IF_ERROR(FIRST(tmpAst));
+					result = EVAL(env, tmpAst);
+					RETURN_IF_ERROR(result);
+					break;
+				}
+
 				case VALUE_KEYWORD: {
 					switch (FIRST(ast)->as.keyword) {
 						case KEYWORD_DEF: {
@@ -102,24 +111,17 @@ static Value *_eval(Env *env, Value *ast, int depth, int *line) {
 					break;
 				}
 
-				case VALUE_PAIR:
-				case VALUE_SYMBOL: {
-					Value *evaluatedAst = list_create(ast->pos);
-					ITERATE_LIST(i, ast) {
-						Value *value = EVAL(env, FIRST(i));
-						RETURN_IF_ERROR(value);
-						list_add(evaluatedAst, value);
-					}
-
-					result = EVAL(env, evaluatedAst);
-					RETURN_IF_ERROR(result);
-					break;
-				}
-
 				case VALUE_FUNCTION: {
 					Value *function = FIRST(ast);
 					Value *argNames = function->as.function.args;
-					Value *argValues = REST(ast);
+
+					Value *argValues = list_create(REST(ast)->pos);
+					ITERATE_LIST(i, REST(ast)) {
+						Value *arg = EVAL(env, FIRST(i));
+						RETURN_IF_ERROR(arg);
+						list_add(argValues, arg);
+					}
+
 					int argNamesLen = list_length(argNames);
 					int argValuesLen = list_length(argValues);
 
@@ -134,13 +136,24 @@ static Value *_eval(Env *env, Value *ast, int depth, int *line) {
 
 					result = EVAL(funEnv, function->as.function.body);
 					RETURN_IF_ERROR(result);
+
+					value_destroy(argValues);
 					break;
 				}
 
 				case VALUE_C_FUNCTION: {
-					result = FIRST(ast)->as.cFunction(REST(ast));
+					Value *argValues = list_create(REST(ast)->pos);
+					ITERATE_LIST(i, REST(ast)) {
+						Value *arg = EVAL(env, FIRST(i));
+						RETURN_IF_ERROR(arg);
+						list_add(argValues, arg);
+					}
+
+					result = FIRST(ast)->as.cFunction(argValues);
 					if (IS_TEXT_POS_NONE(result->pos)) result->pos = ast->pos;
 					RETURN_IF_ERROR(result);
+
+					value_destroy(argValues);
 					break;
 				}
 				case VALUE_NIL:

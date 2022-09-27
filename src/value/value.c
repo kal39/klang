@@ -72,38 +72,23 @@ Value *value_create_c_function(TextPos pos, Value *(*cFunction)(Value *args)) {
 }
 
 Value *value_copy(Value *value) {
-	Value *newValue = malloc(sizeof(Value));
-	memcpy(newValue, value, sizeof(Value));
-
 	switch (value->type) {
+		case VALUE_KEYWORD: return value_create_keyword(value->pos, value->as.keyword);
+		case VALUE_NIL: return value_create(value->pos, VALUE_NIL);
+		case VALUE_TRUE: return value_create(value->pos, VALUE_TRUE);
+		case VALUE_FALSE: return value_create(value->pos, VALUE_FALSE);
 		case VALUE_PAIR:
-			FIRST(newValue) = value_copy(FIRST(value));
-			REST(newValue) = value_copy(REST(value));
-			break;
+			return value_create_pair(value->pos, value_copy(value->as.pair.first), value_copy(value->as.pair.rest));
 		case VALUE_SYMBOL:
 		case VALUE_STRING:
-		case VALUE_ERROR:
-			if (value->as.chars != NULL) {
-				int len = strlen(value->as.chars) + 1;
-				newValue->as.chars = malloc(len);
-				memcpy(newValue->as.chars, value->as.chars, len);
-			} else {
-				newValue->as.chars = NULL;
-			}
-			break;
+		case VALUE_ERROR: return value_create_chars(value->pos, value->type, value->as.chars, strlen(value->as.chars));
+		case VALUE_NUMBER: return value_create_number(value->pos, value->as.number);
 		case VALUE_FUNCTION:
-			newValue->as.function.args = value_copy(value->as.function.args);
-			newValue->as.function.body = value_copy(value->as.function.body);
-			break;
-		case VALUE_KEYWORD:
-		case VALUE_NIL:
-		case VALUE_TRUE:
-		case VALUE_FALSE:
-		case VALUE_NUMBER:
-		case VALUE_C_FUNCTION: break;
+			return value_create_function(
+				value->pos, value->as.function.outer, value->as.function.args, value->as.function.body);
+		case VALUE_C_FUNCTION: return value_create_c_function(value->pos, value->as.cFunction);
 	}
-
-	return newValue;
+	return NULL;
 }
 
 void value_destroy(Value *value) {

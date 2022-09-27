@@ -22,7 +22,7 @@ Value *env_get(Env *env, Value *key) {
 	if (!IS_SYMBOL(key)) return ERROR(key->pos, "expected symbol");
 	Value *value = table_get(env->table, key->as.chars);
 
-	if (value != NULL) return value;
+	if (value != NULL) return value_copy(value);
 	else if (env->outer != NULL) return env_get(env->outer, key);
 	else return value_create(key->pos, VALUE_NIL);
 }

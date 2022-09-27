@@ -1,6 +1,7 @@
 #include <readline/history.h>
 #include <readline/readline.h>
 
+#define K_MEM_TRACKER_IMPLEMENTATION
 #include "core/core.h"
 #include "env/env.h"
 #include "eval/eval.h"
@@ -13,6 +14,7 @@
 // TODO: TCO
 // TODO: argv / argc
 // TODO: macros
+// TODO: Value allocation manager
 
 static void _repl() {
 	Env *core = make_core();
@@ -64,5 +66,7 @@ int main(int argc, char **argv) {
 	if (argc == 1) _repl();
 	else if (argc == 2) _run_file(argv[1]);
 	else printf("ERROR: Usage: mal [filename]\n");
+
+	k_mem_track_print(true);
 	return 0;
 }
