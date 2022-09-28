@@ -31,6 +31,7 @@ static Value *_eval(Env *env, Value *ast, int depth, int *line) {
 					Value *tmpAst = value_create_pair(FIRST(ast)->pos, EVAL(env, FIRST(ast)), REST(ast));
 					RETURN_IF_ERROR(FIRST(tmpAst));
 					result = EVAL(env, tmpAst);
+					value_destroy(tmpAst);
 					RETURN_IF_ERROR(result);
 					break;
 				}
@@ -59,6 +60,7 @@ static Value *_eval(Env *env, Value *ast, int depth, int *line) {
 								Value *value = EVAL(env, SECOND(i));
 								RETURN_IF_ERROR(value);
 								env_set(newEnv, key, value);
+								value_destroy(value);
 							}
 
 							result = EVAL(newEnv, THIRD(ast));
@@ -84,6 +86,7 @@ static Value *_eval(Env *env, Value *ast, int depth, int *line) {
 							RETURN_IF_ERROR(condition);
 							result = EVAL(env, IS_FALSE(condition) ? FOURTH(ast) : THIRD(ast));
 							RETURN_IF_ERROR(result);
+							value_destroy(condition);
 							break;
 						}
 
@@ -99,6 +102,7 @@ static Value *_eval(Env *env, Value *ast, int depth, int *line) {
 							RETURN_IF_ERROR(value);
 							result = EVAL(env, value);
 							RETURN_IF_ERROR(result);
+							value_destroy(value);
 							break;
 						}
 

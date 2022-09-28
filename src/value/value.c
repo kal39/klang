@@ -1,34 +1,35 @@
 #include "value.h"
 #include "listutil.h"
+#include "value_tracker.h"
 
-Value *value_create(TextPos pos, ValueType type) {
-	Value *value = malloc(sizeof(Value));
+Value *_value_create(TextPos pos, ValueType type, char *file, int line) {
+	Value *value = value_alloc(file, line);
 	value->pos = pos;
 	value->type = type;
 	return value;
 }
 
-Value *value_create_keyword(TextPos pos, KeywordType keyword) {
-	Value *value = value_create(pos, VALUE_KEYWORD);
+Value *_value_create_keyword(TextPos pos, KeywordType keyword, char *file, int line) {
+	Value *value = _value_create(pos, VALUE_KEYWORD, file, line);
 	value->as.keyword = keyword;
 	return value;
 }
 
-Value *value_create_pair(TextPos pos, Value *first, Value *rest) {
-	Value *value = value_create(pos, VALUE_PAIR);
+Value *_value_create_pair(TextPos pos, Value *first, Value *rest, char *file, int line) {
+	Value *value = _value_create(pos, VALUE_PAIR, file, line);
 	value->as.pair.first = first;
 	value->as.pair.rest = rest;
 	return value;
 }
 
-Value *value_create_number(TextPos pos, double number) {
-	Value *value = value_create(pos, VALUE_NUMBER);
+Value *_value_create_number(TextPos pos, double number, char *file, int line) {
+	Value *value = _value_create(pos, VALUE_NUMBER, file, line);
 	value->as.number = number;
 	return value;
 }
 
-Value *value_create_chars(TextPos pos, ValueType type, char *string, int stringLength) {
-	Value *value = value_create(pos, type);
+Value *_value_create_chars(TextPos pos, ValueType type, char *string, int stringLength, char *file, int line) {
+	Value *value = _value_create(pos, type, file, line);
 	value->as.chars = malloc(stringLength + 1);
 
 	int i = 0, skippedChars = 0;
@@ -57,41 +58,46 @@ Value *value_create_chars(TextPos pos, ValueType type, char *string, int stringL
 	return value;
 }
 
-Value *value_create_function(TextPos pos, Env *outer, Value *args, Value *body) {
-	Value *value = value_create(pos, VALUE_FUNCTION);
+Value *_value_create_function(TextPos pos, Env *outer, Value *args, Value *body, char *file, int line) {
+	Value *value = _value_create(pos, VALUE_FUNCTION, file, line);
 	value->as.function.outer = outer;
 	value->as.function.args = args;
 	value->as.function.body = body;
 	return value;
 }
 
-Value *value_create_c_function(TextPos pos, Value *(*cFunction)(Value *args)) {
-	Value *value = value_create(pos, VALUE_C_FUNCTION);
+Value *_value_create_c_function(TextPos pos, Value *(*cFunction)(Value *args), char *file, int line) {
+	Value *value = _value_create(pos, VALUE_C_FUNCTION, file, line);
 	value->as.cFunction = cFunction;
 	return value;
 }
 
-Value *value_copy(Value *value) {
+Value *_value_copy(Value *value, char *file, int line) {
 	switch (value->type) {
-		case VALUE_KEYWORD: return value_create_keyword(value->pos, value->as.keyword);
-		case VALUE_NIL: return value_create(value->pos, VALUE_NIL);
-		case VALUE_TRUE: return value_create(value->pos, VALUE_TRUE);
-		case VALUE_FALSE: return value_create(value->pos, VALUE_FALSE);
+		case VALUE_KEYWORD: return _value_create_keyword(value->pos, value->as.keyword, file, line);
+		case VALUE_NIL: return _value_create(value->pos, VALUE_NIL, file, line);
+		case VALUE_TRUE: return _value_create(value->pos, VALUE_TRUE, file, line);
+		case VALUE_FALSE: return _value_create(value->pos, VALUE_FALSE, file, line);
 		case VALUE_PAIR:
-			return value_create_pair(value->pos, value_copy(value->as.pair.first), value_copy(value->as.pair.rest));
+			return _value_create_pair(value->pos,
+									  _value_copy(value->as.pair.first, file, line),
+									  _value_copy(value->as.pair.rest, file, line),
+									  file,
+									  line);
 		case VALUE_SYMBOL:
 		case VALUE_STRING:
-		case VALUE_ERROR: return value_create_chars(value->pos, value->type, value->as.chars, strlen(value->as.chars));
-		case VALUE_NUMBER: return value_create_number(value->pos, value->as.number);
+		case VALUE_ERROR:
+			return _value_create_chars(value->pos, value->type, value->as.chars, strlen(value->as.chars), file, line);
+		case VALUE_NUMBER: return _value_create_number(value->pos, value->as.number, file, line);
 		case VALUE_FUNCTION:
-			return value_create_function(
-				value->pos, value->as.function.outer, value->as.function.args, value->as.function.body);
-		case VALUE_C_FUNCTION: return value_create_c_function(value->pos, value->as.cFunction);
+			return _value_create_function(
+				value->pos, value->as.function.outer, value->as.function.args, value->as.function.body, file, line);
+		case VALUE_C_FUNCTION: return _value_create_c_function(value->pos, value->as.cFunction, file, line);
 	}
 	return NULL;
 }
 
-void value_destroy(Value *value) {
+void _value_destroy(Value *value, char *file, int line) {
 	if (value == NULL) return;
 
 	switch (value->type) {
@@ -119,8 +125,7 @@ void value_destroy(Value *value) {
 		case VALUE_C_FUNCTION: break;
 	}
 
-	free(value);
-	value = NULL;
+	value_free(value, file, line);
 }
 
 // TODO: handle pairs

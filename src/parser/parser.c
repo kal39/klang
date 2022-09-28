@@ -87,5 +87,7 @@ Value *parse_file(char *fileName) {
 
 	fclose(fp);
 
-	return parse_string(buff, fileName);
+	Value *value = parse_string(buff, fileName);
+	free(buff);
+	return value;
 }

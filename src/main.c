@@ -7,6 +7,7 @@
 #include "eval/eval.h"
 #include "parser/parser.h"
 #include "value/listutil.h"
+#include "value/value_tracker.h"
 
 // TODO: vectors
 // TODO: hashmaps
@@ -67,6 +68,7 @@ int main(int argc, char **argv) {
 	else if (argc == 2) _run_file(argv[1]);
 	else printf("ERROR: Usage: mal [filename]\n");
 
-	k_mem_track_print(true);
+	print_value_tracker_status(false);
+	// k_mem_track_print(true);
 	return 0;
 }

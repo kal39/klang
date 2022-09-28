@@ -11,11 +11,6 @@ typedef struct Env {
 	Table *table;
 } Env;
 
-#define ADD_FUNCTION(env, symbol, function)                                                                            \
-	env_set(env,                                                                                                       \
-			value_create_chars(TEXT_POS_NONE, VALUE_SYMBOL, symbol, strlen(symbol)),                                   \
-			value_create_c_function(TEXT_POS_NONE, function))
-
 Env *env_create(Env *outer);
 void env_destroy(Env *env);
 

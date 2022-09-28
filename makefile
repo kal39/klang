@@ -7,7 +7,7 @@
 EXECUTABLE     := klang
 LIBS           := -lreadline
 FLAGS          := -Wall -Wno-missing-braces -g
-DEFS           := #-DPRINT_EVALUATION_STEPS
+DEFS           := -DENABLE_VALUE_TRACKER #-DPRINT_EVALUATION_STEPS
 
 #---- PROJECT STRUCTURE -----------------------------------------------------------------------------------------------#
 

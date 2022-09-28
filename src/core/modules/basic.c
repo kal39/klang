@@ -167,16 +167,16 @@ static Value *_parse_string(Value *args) {
 }
 
 void add_core_basic(Env *core) {
-	ADD_FUNCTION(core, "+", _add);
-	ADD_FUNCTION(core, "-", _subtract);
-	ADD_FUNCTION(core, "*", _multiply);
-	ADD_FUNCTION(core, "/", _divide);
-	ADD_FUNCTION(core, "=", _equals);
-	ADD_FUNCTION(core, "<", _less_than);
-	ADD_FUNCTION(core, "<=", _less_than_equals);
-	ADD_FUNCTION(core, ">", _greater_than);
-	ADD_FUNCTION(core, ">=", _greater_than_equals);
-	ADD_FUNCTION(core, "!", _not);
-	ADD_FUNCTION(core, "string", _string);
-	ADD_FUNCTION(core, "parse-string", _parse_string);
+	add_function(core, "+", _add);
+	add_function(core, "-", _subtract);
+	add_function(core, "*", _multiply);
+	add_function(core, "/", _divide);
+	add_function(core, "=", _equals);
+	add_function(core, "<", _less_than);
+	add_function(core, "<=", _less_than_equals);
+	add_function(core, ">", _greater_than);
+	add_function(core, ">=", _greater_than_equals);
+	add_function(core, "!", _not);
+	add_function(core, "string", _string);
+	add_function(core, "parse-string", _parse_string);
 }

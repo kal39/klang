@@ -59,9 +59,9 @@ static Value *_append_file(Value *args) {
 }
 
 void add_core_io(Env *core) {
-	ADD_FUNCTION(core, "print", _print);
-	ADD_FUNCTION(core, "println", _println);
-	ADD_FUNCTION(core, "read-file", _read_file);
-	ADD_FUNCTION(core, "write-file", _write_file);
-	ADD_FUNCTION(core, "append-file", _append_file);
+	add_function(core, "print", _print);
+	add_function(core, "println", _println);
+	add_function(core, "read-file", _read_file);
+	add_function(core, "write-file", _write_file);
+	add_function(core, "append-file", _append_file);
 }

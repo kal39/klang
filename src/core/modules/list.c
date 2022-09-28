@@ -40,11 +40,11 @@ static Value *_count(Value *args) {
 }
 
 void add_core_list(Env *core) {
-	ADD_FUNCTION(core, "cons", _cons);
-	ADD_FUNCTION(core, "first", _first);
-	ADD_FUNCTION(core, "rest", _rest);
-	ADD_FUNCTION(core, "list", _list);
-	ADD_FUNCTION(core, "list?", _is_list);
-	ADD_FUNCTION(core, "empty?", _is_empty);
-	ADD_FUNCTION(core, "count", _count);
+	add_function(core, "cons", _cons);
+	add_function(core, "first", _first);
+	add_function(core, "rest", _rest);
+	add_function(core, "list", _list);
+	add_function(core, "list?", _is_list);
+	add_function(core, "empty?", _is_empty);
+	add_function(core, "count", _count);
 }
